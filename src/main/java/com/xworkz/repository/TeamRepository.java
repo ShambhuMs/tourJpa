@@ -17,5 +17,17 @@ public interface TeamRepository {
  Object[] fetchMultipleColumnByName(String name);
 
  Object fetchMultipleRow(String name1,String name2);
-    List<Object[]> fetchAllCaptainAndCategoryType();
+ List<Object[]> fetchAllCaptainAndCategoryType();
+
+ int updateCaptainByTeamName(String teamName,String captain);
+ int deleteTeamByName(String name);
+ int countTotalNoOfMatches();
+ List<Team> matchesBetweenRange(int startRange,int endRange);
+ Object[] minMatchPlayed();
+
+ List<Object[]> countBasedOnCategoryType();
+ // Creteria Based methods....
+    List<Team> fetchTeamDetailsByCreteria();
+    List<String> fetchCaptainByCriteria();
+    Team fetchTeamByNameCriteria(String name);
 }

@@ -11,6 +11,8 @@ import javax.persistence.*;
 @ToString
 @Entity
 @Table(name = "team")
+@NamedQuery(name = "updateCaptain",query = "update Team set captain=:captain where name=:teamName")
+@NamedQuery(name = "deleteTeam",query = "delete from Team where name=:name")
 public class Team {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,4 +22,5 @@ public class Team {
     @Column(name = "category_type")
     private String categoryType;
     private int noOfPlayers;
+    private int noOfMatches;
 }

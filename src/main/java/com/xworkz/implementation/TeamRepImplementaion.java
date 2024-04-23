@@ -4,6 +4,12 @@ import com.xworkz.DTO.Team;
 import com.xworkz.repository.TeamRepository;
 
 import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -67,6 +73,221 @@ public class TeamRepImplementaion implements TeamRepository {
     }
 
     @Override
+    public Team fetchTeamByNameCriteria(String name) {
+        EntityManagerFactory entityManagerFactory= Persistence.createEntityManagerFactory("com.xworkz");
+        EntityManager entityManager= entityManagerFactory.createEntityManager();
+        try{
+        CriteriaBuilder  criteriaBuilder=  entityManager.getCriteriaBuilder();
+       CriteriaQuery<Team> criteriaQuery= criteriaBuilder.createQuery(Team.class);
+        Root<Team> root= criteriaQuery.from(Team.class);
+         CriteriaQuery query=  criteriaQuery.select(root);
+         Predicate predicate=criteriaBuilder.equal(root.get("name"),name);
+          CriteriaQuery query1=  query.where(predicate);
+     Query query2=  entityManager.createQuery(query1);
+    Object object= query2.getSingleResult();
+            System.out.println(object);
+
+        }catch (Exception e){
+            System.out.println("Got some exception..."+e);
+        }finally {
+            entityManager.close();
+            entityManagerFactory.close();
+        }
+        return null;
+    }
+
+    @Override
+    public List<String> fetchCaptainByCriteria() {
+       EntityManagerFactory entityManagerFactory= Persistence.createEntityManagerFactory("com.xworkz");
+       EntityManager entityManager= entityManagerFactory.createEntityManager();
+        try {
+           CriteriaBuilder criteriaBuilder= entityManager.getCriteriaBuilder();
+           CriteriaQuery criteriaQuery= criteriaBuilder.createQuery(Team.class);
+           Root root= criteriaQuery.from(Team.class);
+         CriteriaQuery query1=  criteriaQuery.select(root.get("captain"));
+        Query query= entityManager.createQuery(query1);
+       List<String> list= query.getResultList();
+            System.out.println("Captain details................");
+       list.forEach(c->{
+           System.out.println("Captain name: "+c);
+       });
+       return list;
+        }catch (Exception e){
+            System.out.println("Got some exception..."+e);
+        }finally {
+            entityManager.close();
+            entityManagerFactory.close();
+        }
+
+
+
+        return null;
+    }
+
+    @Override
+    public List<Team> fetchTeamDetailsByCreteria() {
+     EntityManagerFactory entityManagerFactory=   Persistence.createEntityManagerFactory("com.xworkz");
+    EntityManager entityManager= entityManagerFactory.createEntityManager();
+    try {
+     CriteriaBuilder criteriaBuilder= entityManager.getCriteriaBuilder();
+  CriteriaQuery criteriaQuery=   criteriaBuilder.createQuery(Team.class);
+  Root<Team> root=  criteriaQuery.from(Team.class);
+ CriteriaQuery query=   criteriaQuery.select(root);
+ Query query1= entityManager.createQuery(query);
+ List<Team> teams= query1.getResultList();
+ teams.forEach(x->{
+     System.out.println("ID: "+x.getId());
+     System.out.println("Name: "+x.getName());
+     System.out.println("Captain: "+x.getCaptain());
+     System.out.println("CategoryType: "+x.getCategoryType());
+     System.out.println("=============================");
+ });
+    return teams;
+    }catch (Exception e){
+        System.out.println("Got some exception..."+e);
+    }finally {
+        entityManager.close();
+        entityManagerFactory.close();
+    }
+        return null;
+    }
+
+    @Override
+    public List<Object[]> countBasedOnCategoryType() {
+        EntityManagerFactory entityManagerFactory= Persistence.createEntityManagerFactory("com.xworkz");
+        EntityManager entityManager= entityManagerFactory.createEntityManager();
+        try
+        {
+         Query query=  entityManager.createQuery("select categoryType,count(categoryType) from Team group by categoryType");
+         List<Object[]> values=query.getResultList();
+            System.out.println("Count result based on categoryType....");
+            for (Object[] result: values ) {
+                for (int i = 0; i < result.length; i++) {
+                    System.out.println(result[i]);
+                }
+            }
+
+        }catch (Exception e){
+            System.out.println("Got some exception..."+e);
+        }finally {
+            entityManager.close();
+            entityManagerFactory.close();
+        }
+        return null;
+    }
+
+    @Override
+    public Object[] minMatchPlayed() {
+        EntityManagerFactory entityManagerFactory= Persistence.createEntityManagerFactory("com.xworkz");
+        EntityManager entityManager= entityManagerFactory.createEntityManager();
+        try {
+            Query query= entityManager.createQuery("select name,min(noOfMatches) from Team");
+          Object[] value= (Object[]) query.getSingleResult();
+            System.out.println("Min match played TeamName and min match:");
+            for (int i = 0; i < value.length; i++) {
+                System.out.println(value[i]);
+            }
+
+
+        }catch (Exception e){
+            System.out.println("Got some exception..."+e);
+        }finally {
+            entityManager.close();
+            entityManagerFactory.close();
+        }
+        return null;
+    }
+
+    @Override
+    public List<Team> matchesBetweenRange(int startRange, int endRange) {
+        EntityManagerFactory entityManagerFactory=Persistence.createEntityManagerFactory("com.xworkz");
+        EntityManager entityManager= entityManagerFactory.createEntityManager();
+        try{
+            Query query=  entityManager.createQuery("select t from Team t where t.noOfMatches between :startRange and :endRange");
+            query.setParameter("startRange",startRange);
+            query.setParameter("endRange",endRange);
+            List<Team> teams=query.getResultList();
+             teams.forEach(x->{
+                 System.out.println(x.getId());
+                 System.out.println(x.getName());
+                 System.out.println(x.getCaptain());
+                 System.out.println(x.getNoOfPlayers());
+                 System.out.println(x.getCategoryType());
+                 System.out.println(x.getNoOfMatches());
+                 System.out.println("====================");
+             });
+        }catch (Exception e){
+            System.out.println("Got some exception..."+e);
+        }finally {
+            entityManager.close();
+            entityManagerFactory.close();
+        }
+        return null;
+    }
+
+    @Override
+    public int countTotalNoOfMatches() {
+        EntityManagerFactory entityManagerFactory=Persistence.createEntityManagerFactory("com.xworkz");
+       EntityManager entityManager= entityManagerFactory.createEntityManager();
+       try{
+         Query query=  entityManager.createQuery("select sum(noOfMatches) from Team");
+         long value= (long) query.getSingleResult();
+           System.out.println("total no of matches : "+value);
+       }catch (Exception e){
+           System.out.println("Got some exception..."+e);
+       }finally {
+           entityManager.close();
+           entityManagerFactory.close();
+       }
+        return 0;
+    }
+
+    @Override
+    public int deleteTeamByName(String name) {
+        EntityManagerFactory entityManagerFactory= Persistence.createEntityManagerFactory("com.xworkz");
+        EntityManager entityManager= entityManagerFactory.createEntityManager();
+        EntityTransaction entityTransaction=entityManager.getTransaction();
+        try {
+            entityTransaction.begin();
+            Query query = entityManager.createNamedQuery("deleteTeam");
+            query.setParameter("name",name);
+            int value=  query.executeUpdate();
+            entityTransaction.commit();
+            System.out.println(value);
+        }catch (Exception e){
+            System.out.println("Got some exception..."+e);
+            entityTransaction.rollback();
+        }finally {
+            entityManager.close();
+            entityManagerFactory.close();
+        }
+        return 0;
+    }
+
+    @Override
+    public int updateCaptainByTeamName(String teamName, String captain) {
+        EntityManagerFactory entityManagerFactory= Persistence.createEntityManagerFactory("com.xworkz");
+        EntityManager entityManager= entityManagerFactory.createEntityManager();
+        EntityTransaction entityTransaction=entityManager.getTransaction();
+        try {
+            entityTransaction.begin();
+            Query query = entityManager.createNamedQuery("updateCaptain");
+            query.setParameter("captain",captain);
+            query.setParameter("teamName",teamName);
+            int value=  query.executeUpdate();
+            entityTransaction.commit();
+            System.out.println(value);
+        }catch (Exception e){
+            System.out.println("Got some exception..."+e);
+            entityTransaction.rollback();
+        }finally {
+            entityManager.close();
+            entityManagerFactory.close();
+        }
+        return 0;
+    }
+
+    @Override
     public Object fetchMultipleRow(String name1, String name2) {
         EntityManagerFactory entityManagerFactory= Persistence.createEntityManagerFactory("com.xworkz");
         EntityManager entityManager= entityManagerFactory.createEntityManager();
@@ -84,6 +305,7 @@ public class TeamRepImplementaion implements TeamRepository {
             System.out.println(x.getNoOfPlayers());
             System.out.println(x.getCategoryType());
             System.out.println("============================");
+
         } );
 
         }catch (Exception e){
